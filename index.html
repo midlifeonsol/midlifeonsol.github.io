@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>midlifeonsol • Trading Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui"],
+              display: ["Playfair Display", "ui-serif", "Georgia"],
+            },
+            colors: {
+              sea: {
+                navy: "#060b14",
+                teal: "#A2D1C1",
+                tan: "#C99B6D",
+                ink: "#0b1326",
+              },
+            },
+            boxShadow: {
+              glass:
+                "0 10px 35px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06)",
+              glow: "0 0 0 1px rgba(162,209,193,.15), 0 0 35px rgba(162,209,193,.12)",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+
+      .glass {
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.06),
+          rgba(255, 255, 255, 0.02)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+      }
+
+      .noise {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+        mix-blend-mode: overlay;
+        opacity: 0.35;
+      }
+
+      .gridlines {
+        background-image: radial-gradient(
+            circle at 20% 10%,
+            rgba(162, 209, 193, 0.12) 0%,
+            rgba(162, 209, 193, 0) 50%
+          ),
+          radial-gradient(
+            circle at 80% 30%,
+            rgba(201, 155, 109, 0.14) 0%,
+            rgba(201, 155, 109, 0) 55%
+          ),
+          linear-gradient(
+            rgba(255, 255, 255, 0.055) 1px,
+            transparent 1px
+          ),
+          linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.055) 1px,
+            transparent 1px
+          );
+        background-size: auto, auto, 34px 34px, 34px 34px;
+        background-position: center, center, center, center;
+      }
+
+      .ring-soft {
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+      }
+    </style>
+  </head>
+
+  <body class="min-h-screen bg-sea-navy text-white gridlines">
+    <div class="noise"></div>
+
+    <main class="relative mx-auto w-full max-w-7xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
+      <!-- HERO -->
+      <section class="mb-10">
+        <div class="flex flex-col gap-6">
+          <div class="flex items-end justify-between gap-4">
+            <div>
+              <div class="inline-flex items-center gap-2">
+                <span
+                  class="h-2 w-2 rounded-full bg-sea-teal shadow-[0_0_22px_rgba(162,209,193,.35)]"
+                ></span>
+                <span class="text-xs tracking-[0.32em] text-white/70">TRADING DASHBOARD</span>
+              </div>
+              <h1
+                id="brandName"
+                class="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl"
+              >
+                midlifeonsol
+              </h1>
+            </div>
+            <div class="hidden sm:block">
+              <div class="glass ring-soft rounded-2xl px-4 py-3 shadow-glass">
+                <div class="text-xs text-white/60">Starting → Target</div>
+                <div class="mt-1 flex items-baseline gap-2">
+                  <div id="startBalancePill" class="text-sm font-semibold text-white">$3,000</div>
+                  <div class="text-xs text-white/40">to</div>
+                  <div id="targetBalancePill" class="text-sm font-semibold text-sea-tan">$15,000</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <figure class="glass ring-soft rounded-3xl p-6 shadow-glass sm:p-8">
+            <blockquote class="text-balance font-display text-2xl italic leading-snug text-white/92 sm:text-3xl">
+              <span class="text-sea-tan">“</span>
+              <span id="missionText"></span>
+              <span class="text-sea-tan">”</span>
+            </blockquote>
+            <figcaption class="mt-5 flex items-center justify-between gap-4 text-sm text-white/60">
+              <span class="tracking-wide">— Mission script</span>
+              <span id="asOfDate" class="text-xs text-white/45"></span>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- TRACKER -->
+      <section class="mb-10">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <div class="glass ring-soft rounded-3xl p-6 shadow-glass lg:col-span-4 sm:p-8">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <div class="text-xs tracking-[0.32em] text-white/60">THE TRACKER</div>
+                <div class="mt-3 text-white/70">Current streak</div>
+              </div>
+              <div class="rounded-2xl bg-white/5 px-3 py-2 text-xs text-white/60 ring-1 ring-white/10">
+                Discipline &gt; dopamine
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <div class="text-sm text-white/60">Day</div>
+              <div class="mt-1 flex items-baseline gap-3">
+                <div
+                  id="dayCounter"
+                  class="text-7xl font-semibold tracking-tight sm:text-8xl"
+                >
+                  1
+                </div>
+                <div class="pb-2 text-sm text-white/55">of the climb</div>
+              </div>
+            </div>
+
+            <div class="mt-7 grid grid-cols-1 gap-4">
+              <div class="glass rounded-2xl p-4 shadow-glass">
+                <div class="text-xs text-white/55">Daily P&amp;L</div>
+                <div class="mt-2 flex items-end justify-between gap-3">
+                  <div id="dailyPnlValue" class="text-2xl font-semibold">+$0.00</div>
+                  <div id="dailyPnlMeta" class="text-xs text-white/45"></div>
+                </div>
+              </div>
+              <div class="glass rounded-2xl p-4 shadow-glass">
+                <div class="text-xs text-white/55">Weekly %</div>
+                <div class="mt-2 flex items-end justify-between gap-3">
+                  <div id="weeklyPctValue" class="text-2xl font-semibold">+0.00%</div>
+                  <div id="weeklyPctMeta" class="text-xs text-white/45"></div>
+                </div>
+              </div>
+              <div class="glass rounded-2xl p-4 shadow-glass">
+                <div class="text-xs text-white/55">Progress to $15k</div>
+                <div class="mt-2">
+                  <div class="flex items-end justify-between gap-3">
+                    <div id="progressValue" class="text-2xl font-semibold">0%</div>
+                    <div id="progressMeta" class="text-xs text-white/45"></div>
+                  </div>
+                  <div class="mt-3 h-2 w-full rounded-full bg-white/10">
+                    <div
+                      id="progressBar"
+                      class="h-2 rounded-full bg-sea-teal shadow-[0_0_22px_rgba(162,209,193,.25)]"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass ring-soft rounded-3xl p-6 shadow-glass lg:col-span-8 sm:p-8">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <div class="text-xs tracking-[0.32em] text-white/60">JOURNEY</div>
+                <h2 class="mt-2 text-2xl font-semibold tracking-tight">From $3k to $15k</h2>
+                <div class="mt-1 text-sm text-white/60">
+                  Live chart driven by <span class="font-mono text-white/70">data.js</span>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-3">
+                <div class="rounded-2xl bg-white/5 px-4 py-3 ring-1 ring-white/10">
+                  <div class="text-xs text-white/55">Current balance</div>
+                  <div id="currentBalanceValue" class="mt-1 text-lg font-semibold">$0</div>
+                </div>
+                <a
+                  id="ctaTransparency"
+                  href="#ledger"
+                  class="inline-flex items-center justify-center rounded-2xl bg-sea-teal px-4 py-3 text-sm font-semibold text-sea-navy shadow-glow transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-sea-teal/40"
+                >
+                  View ledger
+                </a>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <div class="relative">
+                <canvas id="progressChart" height="115"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RULES GRID -->
+      <section class="mb-10">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <div class="text-xs tracking-[0.32em] text-white/60">RULES</div>
+            <h2 class="mt-2 text-2xl font-semibold tracking-tight">The four non-negotiables</h2>
+            <div class="mt-1 text-sm text-white/60">Sophisticated, strict, and simple.</div>
+          </div>
+        </div>
+
+        <div id="rulesGrid" class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"></div>
+      </section>
+
+      <!-- TRANSACTION LEDGER -->
+      <section id="ledger" class="mb-10">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div class="text-xs tracking-[0.32em] text-white/60">TRANSACTION LEDGER</div>
+            <h2 class="mt-2 text-2xl font-semibold tracking-tight">Total transparency</h2>
+            <div id="ledgerMeta" class="mt-1 text-sm text-white/60"></div>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="glass rounded-2xl px-4 py-3 shadow-glass">
+              <div class="text-xs text-white/55">Buys</div>
+              <div id="buysCount" class="mt-1 text-lg font-semibold">0</div>
+            </div>
+            <div class="glass rounded-2xl px-4 py-3 shadow-glass">
+              <div class="text-xs text-white/55">Sells</div>
+              <div id="sellsCount" class="mt-1 text-lg font-semibold">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 overflow-hidden rounded-3xl ring-1 ring-white/10">
+          <div class="glass overflow-x-auto">
+            <table class="min-w-full">
+              <thead class="bg-white/[0.03]">
+                <tr class="text-left text-xs tracking-wide text-white/60">
+                  <th class="px-5 py-4 font-semibold">Ticker</th>
+                  <th class="px-5 py-4 font-semibold">Type</th>
+                  <th class="px-5 py-4 font-semibold">Shares</th>
+                  <th class="px-5 py-4 font-semibold">Price</th>
+                  <th class="px-5 py-4 font-semibold">Total</th>
+                  <th class="px-5 py-4 font-semibold">Date</th>
+                </tr>
+              </thead>
+              <tbody id="ledgerBody" class="divide-y divide-white/10"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="pt-6">
+        <div class="glass ring-soft rounded-3xl px-6 py-5 shadow-glass sm:px-8">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="text-sm text-white/60">
+              <span class="font-semibold text-white/80" id="footerBrand">midlifeonsol</span>
+              <span class="text-white/35">•</span>
+              <span id="footerSub">Bold &amp; Brash, but audited.</span>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <a
+                id="socialInstagram"
+                class="group inline-flex items-center justify-center rounded-2xl bg-white/5 px-3 py-3 ring-1 ring-white/10 transition hover:bg-white/10"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Instagram"
+              >
+                <i data-lucide="instagram" class="h-5 w-5 text-white/75 group-hover:text-sea-teal"></i>
+              </a>
+              <a
+                id="socialX"
+                class="group inline-flex items-center justify-center rounded-2xl bg-white/5 px-3 py-3 ring-1 ring-white/10 transition hover:bg-white/10"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="X"
+              >
+                <i data-lucide="twitter" class="h-5 w-5 text-white/75 group-hover:text-sea-teal"></i>
+              </a>
+              <a
+                id="socialTikTok"
+                class="group inline-flex items-center justify-center rounded-2xl bg-white/5 px-3 py-3 ring-1 ring-white/10 transition hover:bg-white/10"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="TikTok"
+              >
+                <i data-lucide="music-2" class="h-5 w-5 text-white/75 group-hover:text-sea-teal"></i>
+              </a>
+              <a
+                id="socialYouTube"
+                class="group inline-flex items-center justify-center rounded-2xl bg-white/5 px-3 py-3 ring-1 ring-white/10 transition hover:bg-white/10"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="YouTube"
+              >
+                <i data-lucide="youtube" class="h-5 w-5 text-white/75 group-hover:text-sea-teal"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.473.0/dist/umd/lucide.min.js"></script>
+
+    <script type="module">
+      import { tradingData } from "./data.js";
+
+      const $ = (id) => document.getElementById(id);
+      const fmtMoney = (n, opts = {}) => {
+        const { maxDigits = 2 } = opts;
+        return new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+          maximumFractionDigits: maxDigits,
+        }).format(Number(n || 0));
+      };
+      const fmtPct = (n) =>
+        `${(Number(n || 0) * 100).toFixed(2).replace("-0.00", "0.00")}%`;
+      const signMoney = (n, digits = 2) => {
+        const x = Number(n || 0);
+        const abs = fmtMoney(Math.abs(x), { maxDigits: digits });
+        return x >= 0 ? `+${abs}` : `-${abs}`;
+      };
+
+      const clamp01 = (x) => Math.max(0, Math.min(1, x));
+
+      function latestDaily(dailyStats) {
+        if (!Array.isArray(dailyStats) || dailyStats.length === 0) return null;
+        return dailyStats[dailyStats.length - 1];
+      }
+
+      function weeklyChange(dailyStats) {
+        if (!Array.isArray(dailyStats) || dailyStats.length < 2) {
+          return { pct: 0, from: null, to: null, span: 0 };
+        }
+        const to = dailyStats[dailyStats.length - 1];
+        const span = Math.min(7, dailyStats.length - 1);
+        const from = dailyStats[dailyStats.length - 1 - span];
+        const denom = Number(from.balance || 0);
+        const pct = denom === 0 ? 0 : (Number(to.balance) - denom) / denom;
+        return { pct, from, to, span };
+      }
+
+      function setText(id, value) {
+        const el = $(id);
+        if (el) el.textContent = value;
+      }
+
+      function setHtmlMultiline(id, value) {
+        const el = $(id);
+        if (!el) return;
+        el.innerHTML = String(value || "").replace(/\n/g, "<br/>");
+      }
+
+      function colorizeValue(el, n) {
+        if (!el) return;
+        el.classList.remove("text-sea-teal", "text-sea-tan", "text-white");
+        if (Number(n) > 0) el.classList.add("text-sea-teal");
+        else if (Number(n) < 0) el.classList.add("text-sea-tan");
+        else el.classList.add("text-white");
+      }
+
+      function renderHero() {
+        setText("brandName", tradingData.brand || "midlifeonsol");
+        setHtmlMultiline("missionText", tradingData.mission || "");
+
+        setText("startBalancePill", fmtMoney(tradingData.startingBalance, { maxDigits: 0 }));
+        setText("targetBalancePill", fmtMoney(tradingData.targetBalance, { maxDigits: 0 }));
+
+        const last = latestDaily(tradingData.dailyStats);
+        setText("asOfDate", last?.date ? `As of ${last.date}` : "");
+
+        setText("footerBrand", tradingData.brand || "midlifeonsol");
+      }
+
+      function renderTracker() {
+        setText("dayCounter", String(tradingData.currentDay ?? 1));
+
+        const last = latestDaily(tradingData.dailyStats);
+        const dailyPnl = Number(last?.pnl ?? 0);
+        const dailyEl = $("dailyPnlValue");
+        setText("dailyPnlValue", signMoney(dailyPnl, 2));
+        colorizeValue(dailyEl, dailyPnl);
+        setText("dailyPnlMeta", last?.date ? last.date : "");
+
+        const wk = weeklyChange(tradingData.dailyStats);
+        const weeklyEl = $("weeklyPctValue");
+        setText("weeklyPctValue", `${wk.pct >= 0 ? "+" : ""}${fmtPct(wk.pct)}`);
+        colorizeValue(weeklyEl, wk.pct);
+        setText(
+          "weeklyPctMeta",
+          wk.from?.date && wk.to?.date ? `${wk.from.date} → ${wk.to.date}` : ""
+        );
+
+        const currentBalance = Number(last?.balance ?? tradingData.startingBalance ?? 0);
+        const start = Number(tradingData.startingBalance ?? 0);
+        const target = Number(tradingData.targetBalance ?? 0);
+        const denom = target - start;
+        const progress = denom <= 0 ? 0 : clamp01((currentBalance - start) / denom);
+        setText("progressValue", `${Math.round(progress * 100)}%`);
+        setText("progressMeta", `${fmtMoney(currentBalance)} / ${fmtMoney(target, { maxDigits: 0 })}`);
+        const bar = $("progressBar");
+        if (bar) bar.style.width = `${progress * 100}%`;
+
+        setText("currentBalanceValue", fmtMoney(currentBalance));
+      }
+
+      function renderRules() {
+        const grid = $("rulesGrid");
+        if (!grid) return;
+
+        const rules = Array.isArray(tradingData.rules) ? tradingData.rules : [];
+        grid.innerHTML = rules
+          .map((r) => {
+            const icon = r.icon || "sparkles";
+            const title = r.title || "";
+            const desc = r.description || "";
+            return `
+              <article class="glass ring-soft rounded-3xl p-5 shadow-glass transition hover:shadow-glow">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="rounded-2xl bg-white/5 p-3 ring-1 ring-white/10">
+                    <i data-lucide="${icon}" class="h-5 w-5 text-sea-tan"></i>
+                  </div>
+                  <div class="text-xs tracking-[0.32em] text-white/45">RULE</div>
+                </div>
+                <h3 class="mt-4 text-lg font-semibold tracking-tight">${title}</h3>
+                <p class="mt-2 text-sm leading-relaxed text-white/65">${desc}</p>
+              </article>
+            `;
+          })
+          .join("");
+      }
+
+      function renderLedger() {
+        const txs = Array.isArray(tradingData.transactions) ? tradingData.transactions : [];
+        setText("ledgerMeta", `${txs.length} transactions pulled from data.js`);
+
+        const buys = txs.filter((t) => String(t.type).toUpperCase() === "BUY").length;
+        const sells = txs.filter((t) => String(t.type).toUpperCase() === "SELL").length;
+        setText("buysCount", String(buys));
+        setText("sellsCount", String(sells));
+
+        const body = $("ledgerBody");
+        if (!body) return;
+
+        const safe = (s) =>
+          String(s ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+
+        const typePill = (type) => {
+          const t = String(type || "").toUpperCase();
+          const isBuy = t === "BUY";
+          const cls = isBuy
+            ? "bg-sea-teal/15 text-sea-teal ring-1 ring-sea-teal/25"
+            : "bg-sea-tan/15 text-sea-tan ring-1 ring-sea-tan/25";
+          return `<span class="inline-flex items-center rounded-xl px-3 py-1 text-xs font-semibold ${cls}">${safe(
+            t || "—"
+          )}</span>`;
+        };
+
+        const priceDigits = (n) => (Number(n) >= 1 ? 2 : 8);
+        const num = (n) => Number(n ?? 0);
+        const fmt = (n, digits) =>
+          new Intl.NumberFormat("en-US", {
+            minimumFractionDigits: digits,
+            maximumFractionDigits: digits,
+          }).format(num(n));
+
+        body.innerHTML = txs
+          .slice()
+          .reverse()
+          .map((t) => {
+            const digits = priceDigits(t.price);
+            return `
+              <tr class="text-sm text-white/75 hover:bg-white/[0.03]">
+                <td class="px-5 py-4 font-semibold text-white">${safe(t.ticker)}</td>
+                <td class="px-5 py-4">${typePill(t.type)}</td>
+                <td class="px-5 py-4">${fmt(t.shares, 4).replace(/\.?0+$/, "")}</td>
+                <td class="px-5 py-4 font-mono text-white/70">$${fmt(t.price, digits)}</td>
+                <td class="px-5 py-4 font-semibold">${fmtMoney(t.total, { maxDigits: 2 })}</td>
+                <td class="px-5 py-4 text-white/60">${safe(t.date)}</td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+
+      function renderSocials() {
+        const s = tradingData.socials || {};
+        const setHref = (id, href) => {
+          const el = $(id);
+          if (el) el.href = href || "#";
+        };
+        setHref("socialInstagram", s.instagram);
+        setHref("socialX", s.x);
+        setHref("socialTikTok", s.tiktok);
+        setHref("socialYouTube", s.youtube);
+      }
+
+      function renderChart() {
+        const canvas = $("progressChart");
+        if (!canvas) return;
+
+        const stats = Array.isArray(tradingData.dailyStats) ? tradingData.dailyStats : [];
+        const labels = stats.map((d) => d.date);
+        const values = stats.map((d) => Number(d.balance ?? 0));
+
+        const ctx = canvas.getContext("2d");
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height || 240);
+        gradient.addColorStop(0, "rgba(162, 209, 193, 0.35)");
+        gradient.addColorStop(0.6, "rgba(162, 209, 193, 0.08)");
+        gradient.addColorStop(1, "rgba(162, 209, 193, 0)");
+
+        const start = Number(tradingData.startingBalance ?? 0);
+        const target = Number(tradingData.targetBalance ?? 0);
+
+        // Destroy any previous chart instance (hot reload / refresh safety).
+        if (window.__midlifeChart) window.__midlifeChart.destroy();
+
+        window.__midlifeChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Balance",
+                data: values,
+                borderColor: "rgba(162, 209, 193, 0.95)",
+                backgroundColor: gradient,
+                fill: true,
+                borderWidth: 2,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                pointBackgroundColor: "rgba(6, 11, 20, 0.9)",
+                pointBorderColor: "rgba(162, 209, 193, 0.95)",
+                tension: 0.35,
+              },
+              {
+                label: "Start",
+                data: labels.map(() => start),
+                borderColor: "rgba(201, 155, 109, 0.45)",
+                borderWidth: 1,
+                borderDash: [6, 6],
+                pointRadius: 0,
+              },
+              {
+                label: "Target",
+                data: labels.map(() => target),
+                borderColor: "rgba(201, 155, 109, 0.85)",
+                borderWidth: 1,
+                borderDash: [4, 6],
+                pointRadius: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: { color: "rgba(255,255,255,.65)" },
+              },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => {
+                    const y = ctx.parsed.y;
+                    if (ctx.dataset.label === "Balance") return ` Balance: ${fmtMoney(y)}`;
+                    if (ctx.dataset.label === "Start") return ` Start: ${fmtMoney(y, { maxDigits: 0 })}`;
+                    if (ctx.dataset.label === "Target") return ` Target: ${fmtMoney(y, { maxDigits: 0 })}`;
+                    return ` ${ctx.dataset.label}: ${fmtMoney(y)}`;
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                ticks: {
+                  color: "rgba(255,255,255,.45)",
+                  maxRotation: 0,
+                  autoSkip: true,
+                },
+                grid: { color: "rgba(255,255,255,.06)" },
+              },
+              y: {
+                ticks: {
+                  color: "rgba(255,255,255,.45)",
+                  callback: (v) => fmtMoney(v, { maxDigits: 0 }),
+                },
+                grid: { color: "rgba(255,255,255,.06)" },
+              },
+            },
+          },
+        });
+      }
+
+      function boot() {
+        renderHero();
+        renderTracker();
+        renderRules();
+        renderLedger();
+        renderSocials();
+        renderChart();
+
+        // Lucide icon hydration
+        if (window.lucide?.createIcons) window.lucide.createIcons();
+      }
+
+      boot();
+    </script>
+  </body>
+</html>
+
