@@ -227,9 +227,9 @@
               </div>
             </div>
 
-            <div class="mt-6">
-              <div class="relative">
-                <canvas id="progressChart" height="115"></canvas>
+            <div class="mt-6 overflow-hidden rounded-2xl border border-sea-mint/10 bg-white/[0.02] sm:rounded-3xl">
+              <div class="relative h-[220px] px-4 pt-5 pb-2 sm:h-[280px] sm:px-5 sm:pt-6">
+                <canvas id="progressChart"></canvas>
               </div>
             </div>
           </div>
@@ -554,19 +554,30 @@
         if (!canvas) return;
 
         const stats = Array.isArray(tradingData.dailyStats) ? tradingData.dailyStats : [];
-        const labels = stats.map((d) => d.date);
+        const labels = stats.map((d) => {
+          const s = String(d.date || "");
+          if (s.length >= 10) {
+            const m = s.slice(5, 7);
+            const day = s.slice(8, 10);
+            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            const mon = months[parseInt(m, 10) - 1] || m;
+            return `${mon} ${parseInt(day, 10)}`;
+          }
+          return s;
+        });
         const values = stats.map((d) => Number(d.balance ?? 0));
 
         const ctx = canvas.getContext("2d");
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height || 240);
-        gradient.addColorStop(0, "rgba(180, 216, 202, 0.4)");
-        gradient.addColorStop(0.6, "rgba(180, 216, 202, 0.1)");
+        const chartH = 240;
+        const gradient = ctx.createLinearGradient(0, 0, 0, chartH);
+        gradient.addColorStop(0, "rgba(180, 216, 202, 0.5)");
+        gradient.addColorStop(0.4, "rgba(180, 216, 202, 0.18)");
+        gradient.addColorStop(0.85, "rgba(180, 216, 202, 0.04)");
         gradient.addColorStop(1, "rgba(180, 216, 202, 0)");
 
         const start = Number(tradingData.startingBalance ?? 0);
         const target = Number(tradingData.targetBalance ?? 0);
 
-        // Destroy any previous chart instance (hot reload / refresh safety).
         if (window.__midlifeChart) window.__midlifeChart.destroy();
 
         window.__midlifeChart = new Chart(ctx, {
@@ -577,30 +588,34 @@
               {
                 label: "Balance",
                 data: values,
-                borderColor: "rgba(162, 209, 193, 0.95)",
+                borderColor: "#b4d8ca",
                 backgroundColor: gradient,
                 fill: true,
-                borderWidth: 2,
-                pointRadius: 3,
-                pointHoverRadius: 5,
-                pointBackgroundColor: "rgba(6, 11, 20, 0.9)",
-                pointBorderColor: "rgba(162, 209, 193, 0.95)",
-                tension: 0.35,
+                borderWidth: 2.5,
+                pointRadius: 4,
+                pointHoverRadius: 8,
+                pointBackgroundColor: "#060b14",
+                pointBorderColor: "#b4d8ca",
+                pointBorderWidth: 2,
+                pointHoverBackgroundColor: "#b4d8ca",
+                pointHoverBorderColor: "#060b14",
+                pointHoverBorderWidth: 2,
+                tension: 0.4,
               },
               {
                 label: "Start",
                 data: labels.map(() => start),
-                borderColor: "rgba(201, 155, 109, 0.45)",
-                borderWidth: 1,
-                borderDash: [6, 6],
+                borderColor: "rgba(201, 155, 109, 0.5)",
+                borderWidth: 1.5,
+                borderDash: [8, 6],
                 pointRadius: 0,
               },
               {
                 label: "Target",
                 data: labels.map(() => target),
-                borderColor: "rgba(201, 155, 109, 0.85)",
-                borderWidth: 1,
-                borderDash: [4, 6],
+                borderColor: "rgba(201, 155, 109, 0.75)",
+                borderWidth: 1.5,
+                borderDash: [6, 6],
                 pointRadius: 0,
               },
             ],
@@ -608,11 +623,34 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+              padding: { top: 8, right: 12, bottom: 4, left: 4 },
+            },
+            interaction: {
+              intersect: false,
+              mode: "index",
+            },
             plugins: {
               legend: {
-                labels: { color: "rgba(255,255,255,.65)" },
+                position: "top",
+                align: "end",
+                labels: {
+                  color: "rgba(255,255,255,0.7)",
+                  usePointStyle: true,
+                  pointStyle: "circle",
+                  padding: 16,
+                  font: { size: 12 },
+                },
               },
               tooltip: {
+                backgroundColor: "rgba(6, 11, 20, 0.95)",
+                titleColor: "rgba(180, 216, 202, 0.95)",
+                bodyColor: "rgba(255,255,255,0.85)",
+                borderColor: "rgba(180, 216, 202, 0.25)",
+                borderWidth: 1,
+                padding: 12,
+                cornerRadius: 10,
+                displayColors: true,
                 callbacks: {
                   label: (ctx) => {
                     const y = ctx.parsed.y;
@@ -627,18 +665,29 @@
             scales: {
               x: {
                 ticks: {
-                  color: "rgba(255,255,255,.45)",
+                  color: "rgba(255,255,255,0.5)",
                   maxRotation: 0,
                   autoSkip: true,
+                  maxTicksLimit: 8,
+                  font: { size: 11 },
+                  padding: 6,
                 },
-                grid: { color: "rgba(255,255,255,.06)" },
+                grid: { display: false },
+                border: { display: false },
               },
               y: {
                 ticks: {
-                  color: "rgba(255,255,255,.45)",
+                  color: "rgba(255,255,255,0.5)",
                   callback: (v) => fmtMoney(v, { maxDigits: 0 }),
+                  maxTicksLimit: 6,
+                  font: { size: 11 },
+                  padding: 8,
                 },
-                grid: { color: "rgba(255,255,255,.06)" },
+                grid: {
+                  color: "rgba(255,255,255,0.06)",
+                  drawTicks: false,
+                },
+                border: { display: false },
               },
             },
           },
