@@ -47,7 +47,7 @@ export const tradingData = {
   // Daily snapshot of progress
   dailyStats: [
     { date: "2026-02-16", balance: 3000, pnl: 0 },
-    { date: "2026-02-17", balance: 3019.00, pnl: 19.05 },
+    { date: "2026-02-17", balance: 3019.05, pnl: 19.05 },
   ],
 
   // Ledger of specific moves
@@ -70,3 +70,4 @@ export const tradingData = {
     },
   ],
 };
+
