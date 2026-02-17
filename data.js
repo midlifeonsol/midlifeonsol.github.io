@@ -3,7 +3,7 @@
 
 export const tradingData = {
   // Required fields
-  currentDay: 0,
+  currentDay: 1,
   startingBalance: 3000,
   targetBalance: 15000,
 
@@ -44,11 +44,29 @@ export const tradingData = {
     },
   ],
 
-  // Required fields (challenge starts tomorrow — day 0, no trades yet)
+  // Daily snapshot of progress
   dailyStats: [
-    { date: "2025-02-17", balance: 3000, pnl: 0 },
+    { date: "2026-02-16", balance: 3000, pnl: 0 },
+    { date: "2026-02-17", balance: 3019.00, pnl: 19.05 },
   ],
 
-  transactions: [],
+  // Ledger of specific moves
+  transactions: [
+    {
+      ticker: "TSLA",
+      type: "BUY",
+      shares: 7.3431,
+      price: 408.54,
+      total: 2999.95,
+      date: "2026-02-17 09:32 AM",
+    },
+    {
+      ticker: "TSLA",
+      type: "SELL",
+      shares: 7.3431,
+      price: 411.1338,
+      total: 3019.00,
+      date: "2026-02-17 09:36 AM",
+    },
+  ],
 };
-
