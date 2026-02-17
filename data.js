@@ -47,7 +47,7 @@ export const tradingData = {
   // Daily snapshot of progress
   dailyStats: [
     { date: "2026-02-16", balance: 3000, pnl: 0 },
-    { date: "2026-02-17", balance: 3019.05, pnl: 19.05 },
+    { date: "2026-02-17", balance: 3030.71, pnl: 30.71 },
   ],
 
   // Ledger of specific moves
@@ -67,6 +67,22 @@ export const tradingData = {
       price: 411.1338,
       total: 3019.00,
       date: "2026-02-17 09:36 AM",
+    },
+    {
+      ticker: "MSTZ",
+      type: "BUY",
+      shares: 222,
+      price: 13.55,
+      total: 3008.10,
+      date: "2026-02-17 11:51 AM",
+    },
+    {
+      ticker: "MSTZ",
+      type: "SELL",
+      shares: 222,
+      price: 13.60,
+      total: 3019.20,
+      date: "2026-02-17 12:00 PM",
     },
   ],
 };
