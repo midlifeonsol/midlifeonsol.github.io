@@ -19,7 +19,7 @@ export const tradingData = {
   dailyStats: [
     { date: "2026-02-16", balance: 3000, pnl: 0 },
     { date: "2026-02-17", balance: 3030.71, pnl: 30.71 },
-    { date: "2026-02-18", balance: 3059.91, pnl: 29.20 },
+    { date: "2026-02-18", balance: 2953.39, pnl: -77.32 },
   ],
   transactions: [
     // --- FEB 17 ---
@@ -39,3 +39,4 @@ export const tradingData = {
     { ticker: "BMNR", type: "BUY", shares: 148, price: 20.62, total: 3051.76, date: "2026-02-18 10:41 AM", link: "https://x.com/midlifeonsol/status/2024147374663221307" },
   ],
 };
+
